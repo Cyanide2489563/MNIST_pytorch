@@ -6,9 +6,9 @@ import torch.nn as nn
 import torch.utils.data as data
 from torchvision import datasets, transforms
 
-# 定義訓練過程是以 GPU(CUDA) 或 CPU 做運算
 from torchviz import make_dot
 
+# 定義訓練過程是以 GPU(CUDA) 或 CPU 做運算
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 將圖像資料的灰階數值範圍從 0 ~ 255 壓縮成 0 ~ 1 的範圍內
