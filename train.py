@@ -27,7 +27,6 @@ testLoader = data.DataLoader(testSet, batch_size=128, shuffle=False)
 class MLP(nn.Module):
     def __init__(self):
         super(MLP, self).__init__()
-        # linear layer (784 -> 1 hidden node)
         # Fully Connected Layer
         self.fc1 = nn.Linear(28 * 28, 512)
         self.fc2 = nn.Linear(512, 256)
@@ -51,8 +50,9 @@ model = MLP().to(device=device)
 print("類神經網路結構")
 print(model)
 # 輸出網路結構圖
+_model = MLP()
 _input = torch.rand(13, 1, 28, 28)
-MyConvNetVis = make_dot(model(_input), params=dict(model.named_parameters()))
+MyConvNetVis = make_dot(_model(_input), params=dict(_model.named_parameters()))
 MyConvNetVis.format = "svg"
 MyConvNetVis.directory = "data"
 # 輸出目前使用的裝置
