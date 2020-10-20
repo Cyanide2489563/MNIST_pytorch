@@ -1,12 +1,12 @@
 # python version: 3.8
 # -*- coding:utf-8 -*-
-
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.data as data
 from torchvision import datasets, transforms
 
-from torchviz import make_dot
+from MLP import MLP
 
 # 定義訓練過程是以 GPU(CUDA) 或 CPU 做運算
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,39 +22,11 @@ testSet = datasets.MNIST(root='dataset', download=True, train=False, transform=t
 trainLoader = data.DataLoader(trainSet, batch_size=64, shuffle=True)
 testLoader = data.DataLoader(testSet, batch_size=128, shuffle=False)
 
-
-# 定義類神經網路
-class MLP(nn.Module):
-    def __init__(self):
-        super(MLP, self).__init__()
-        # Fully Connected Layer
-        self.fc1 = nn.Linear(28 * 28, 512)
-        self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 10)
-        # 定義 Dropout 機率 P = 0.5
-        self.dropout = nn.Dropout(0.5)
-
-    # 定義向前傳播函數
-    def forward(self, x):
-        # 展開輸入
-        x = x.view(-1, 28 * 28)
-        # add hidden layer, with relu activation function
-        x = self.dropout(nn.functional.relu(self.fc1(x)))
-        x = self.dropout(nn.functional.relu(self.fc2(x)))
-        x = self.fc3(x)
-        return x
-
-
 # 初始化 NN (Neural Network) 並指定運算裝置
 model = MLP().to(device=device)
 print("類神經網路結構")
 print(model)
-# 輸出網路結構圖
-_model = MLP()
-_input = torch.rand(13, 1, 28, 28)
-MyConvNetVis = make_dot(_model(_input), params=dict(_model.named_parameters()))
-MyConvNetVis.format = "svg"
-MyConvNetVis.directory = "data"
+
 # 輸出目前使用的裝置
 print("裝置:", list(model.parameters())[0].device)
 
@@ -62,6 +34,8 @@ print("裝置:", list(model.parameters())[0].device)
 loss_function = nn.CrossEntropyLoss()
 # 指定最佳化方法，採用 SGD(隨機梯度下降)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
+
+valid_loss_min = np.Inf
 # 訓練次數
 epochs = 50
 for epoch in range(epochs):
@@ -116,3 +90,10 @@ for epoch in range(epochs):
     ))
     # 輸出正確率
     print("正確率: {:.2f}%".format(100. * correct / len(testLoader.dataset)))
+
+    if valid_loss <= valid_loss_min:
+        print("Validation los decreased({:.6f}-->{:.6f}). Saving model ..".format(
+            valid_loss_min,
+            valid_loss))
+        torch.save(model.state_dict(), "model.pt")
+        valid_loss_min = valid_loss
